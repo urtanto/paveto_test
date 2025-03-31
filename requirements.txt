@@ -1,0 +1,7 @@
+fastapi
+alembic
+SQLAlchemy
+asyncpg
+psycopg[binary]
+sqlalchemy[asyncio]
+colorlog
