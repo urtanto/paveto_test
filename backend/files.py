@@ -35,7 +35,6 @@ async def upload_file(user: User = Depends(get_user), file: UploadFile = File(..
 
             session.add(audio_file)
             await session.commit()
-            await session.refresh(audio_file)
 
     return {
         "id": str(audio_file.id),
@@ -85,7 +84,6 @@ async def update_audio_file(
 
             audio_file.filename = update.filename
             await session.commit()
-            await session.refresh(audio_file)
     return {
         "id": str(audio_file.id),
         "filename": audio_file.filename,
