@@ -54,7 +54,6 @@ async def auth_yandex_callback(request: Request, code: str):
         async with session.get(user_info_url, headers=headers) as response:
             if response.status == 200:
                 user_info = await response.json()
-                print(user_info)
             else:
                 raise HTTPException(status_code=401, detail="Yandex user info retrieval failed")
 
