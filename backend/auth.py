@@ -74,7 +74,7 @@ async def auth_yandex_callback(request: Request, code: str):
                 await session.commit()
 
     payload = {
-        "sub": user.id,
+        "sub": str(user.id),
         "exp": datetime.datetime.now(datetime.timezone.utc) +
                datetime.timedelta(seconds=request.app.state.jwt_exp_delta_seconds),
     }
