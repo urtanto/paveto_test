@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.datastructures import State
 
-from auth import auth_router
+from backend.auth import auth_router
 
 
 @asynccontextmanager
