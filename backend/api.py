@@ -34,19 +34,19 @@ async def get_me(user: User = Depends(get_user)):
     }
 
 @api_router.patch("/me")
-async def patch_me(user_update: UserUpdate, user: User = Depends(get_user)):
+async def patch_me(update: UserUpdate, user: User = Depends(get_user)):
     async with await Database().get_session() as session:
         async with session.begin():
-            # user: User = (
-            #     await session.execute(
-            #         select(User).where(User.id == user.id)
-            #     )
-            # ).unique().scalar_one_or_none()
+            user: User = (
+                await session.execute(
+                    select(User).where(User.id == user.id)
+                )
+            ).unique().scalar_one_or_none()
 
-            if user_update.name:
-                user.name = user_update.username
-            if user_update.email:
-                user.email = user_update.email
+            if update.name:
+                user.name = update.username
+            if update.email:
+                user.email = update.email
 
             await session.commit()
     return {
