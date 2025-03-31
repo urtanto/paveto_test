@@ -35,22 +35,20 @@ async def auth_yandex_callback(request: Request, code: str):
 
     async with aiohttp.ClientSession() as session:
         async with session.post(token_url, headers=headers, data=data) as response:
-            print(response.status)
-            print(await response.text())
-            print(await response.json())
             if response.status == 200:
                 token_data = await response.json()
-                print(json.dumps(token_data, indent=2))
                 access_token = token_data.get("access_token")
-                refresh_token = token_data.get("refresh_token")
-                expires_in = token_data.get("expires_in")
-                if access_token:
-                    return {
-                        "access_token": access_token,
-                        "refresh_token": refresh_token,
-                        "expires_in": expires_in,
-                        "token_type": "bearer"
-                    }
             else:
-                raise HTTPException(status_code=401, detail="Failed to retrieve access token")
+                raise HTTPException(status_code=401, detail="Yandex token exchange failed")
+
+
+        user_info_url = "https://login.yandex.ru/info"
+        headers = {"Authorization": f"OAuth {access_token}"}
+        async with session.get(user_info_url, headers=headers) as response:
+            if response.status == 200:
+                user_info = await response.json()
+                print(user_info)
+            else:
+                raise HTTPException(status_code=401, detail="Yandex user info retrieval failed")
+
 
