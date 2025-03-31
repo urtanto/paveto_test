@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from backend.auth import get_user, get_admin
+from backend.auth import get_admin, get_user
 from database import Database
 from database.models import User
 
@@ -49,11 +49,13 @@ async def patch_me(update: UserUpdate, user: User = Depends(get_user)):
 async def patch_me(_: User = Depends(get_user)):
     async with await Database().get_session() as session:
         async with session.begin():
-            users: list[User] = list((
-                await session.execute(
-                    select(User)
-                )
-            ).scalars().all())
+            users: list[User] = list(
+                (
+                    await session.execute(
+                        select(User)
+                    )
+                ).scalars().all()
+            )
     return {
         "users": [
             {
@@ -64,6 +66,7 @@ async def patch_me(_: User = Depends(get_user)):
             } for user in users
         ]
     }
+
 
 @user_router.get("/{user_id}")
 async def get_user_req(user_id: str, _: User = Depends(get_user)):

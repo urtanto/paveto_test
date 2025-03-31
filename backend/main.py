@@ -7,6 +7,7 @@ from fastapi.datastructures import State
 
 from backend.api import api_router
 from backend.auth import auth_router
+from backend.file import file_router
 from database import Database
 
 load_dotenv()
@@ -30,8 +31,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(auth_router)
 app.include_router(api_router)
+app.include_router(file_router)
 
 if __name__ == '__main__':
     import uvicorn

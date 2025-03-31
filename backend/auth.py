@@ -12,7 +12,7 @@ from starlette.responses import RedirectResponse
 from database import Database
 from database.models import User
 
-auth_router = APIRouter()
+auth_router = APIRouter(prefix="/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/yandex")
 
 
