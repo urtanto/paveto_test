@@ -8,3 +8,4 @@ psycopg[binary]
 sqlalchemy[asyncio]
 dotenv
 aiohttp
+jwt

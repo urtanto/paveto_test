@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.datastructures import State
 
 from backend.auth import auth_router
+from database import Database
 
 load_dotenv()
 
@@ -19,6 +20,10 @@ async def lifespan(app: FastAPI):
     app.state.yandex_client_secret = os.getenv("YANDEX_CLIENT_SECRET")
     app.state.yandex_redirect_uri = os.getenv("YANDEX_REDIRECT_URI")
     app.state.jwt_secret = os.getenv("JWT_SECRET")
+    app.state.jwt_algorithm = os.getenv("JWT_ALGORITHM", "HS256")
+    app.state.jwt_exp_delta_seconds = os.getenv("JWT_EXP_DELTA_SECONDS")
+
+    await Database().init()
     yield
 
 

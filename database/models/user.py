@@ -10,7 +10,8 @@ class User(SqlAlchemyBase):
     __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True)
-    email = Column(String, unique=True, index=True, nullable=True)
+    yandex_id = Column(String, unique=True, index=True, nullable=True)
+    email = Column(String, unique=True, nullable=True)
     name = Column(String, nullable=True)
     is_superuser = Column(Boolean, default=False)
 

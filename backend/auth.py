@@ -1,12 +1,18 @@
-import json
+import datetime
 
 import aiohttp
-from fastapi import APIRouter, Request, HTTPException
+import jwt
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import select
 from starlette.responses import RedirectResponse
+
+from database import Database
+from database.models import User
 
 auth_router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/yandex")
+
 
 @auth_router.get("/yandex")
 async def auth_yandex(request: Request):
@@ -41,7 +47,6 @@ async def auth_yandex_callback(request: Request, code: str):
             else:
                 raise HTTPException(status_code=401, detail="Yandex token exchange failed")
 
-
         user_info_url = "https://login.yandex.ru/info"
         headers = {"Authorization": f"OAuth {access_token}"}
         async with session.get(user_info_url, headers=headers) as response:
@@ -51,4 +56,27 @@ async def auth_yandex_callback(request: Request, code: str):
             else:
                 raise HTTPException(status_code=401, detail="Yandex user info retrieval failed")
 
+    async with Database().get_session() as session:
+        async with session.begin():
+            user: User = (
+                await session.execute(
+                    select(User).where(User.yandex_id == user_info.get("id"))
+                )
+            ).unique().scalar_one_or_none()
 
+            if not user:
+                user = User(
+                    yandex_id=user_info.get("id"),
+                    email=user_info.get("default_email"),
+                    name=user_info.get("display_name"),
+                )
+                session.add(user)
+                await session.commit()
+
+    payload = {
+        "sub": user.id,
+        "exp": datetime.datetime.now(datetime.timezone.utc) +
+               datetime.timedelta(seconds=request.app.state.yandex_exp_delta_seconds),
+    }
+    internal_token = jwt.encode(payload, request.app.state.jwt_secret, algorithm=request.app.state.jwt_algorithm)
+    return {"access_token": internal_token, "token_type": "bearer"}
