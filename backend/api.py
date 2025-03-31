@@ -37,21 +37,21 @@ async def get_me(user: User = Depends(get_user)):
 async def patch_me(update: UserUpdate, user: User = Depends(get_user)):
     async with await Database().get_session() as session:
         async with session.begin():
-            user: User = (
+            db_user: User = (
                 await session.execute(
                     select(User).where(User.id == user.id)
                 )
             ).unique().scalar_one_or_none()
 
             if update.name:
-                user.name = update.username
+                db_user.name = update.username
             if update.email:
-                user.email = update.email
+                db_user.email = update.email
 
             await session.commit()
     return {
-        "id": str(user.id),
-        "yandex_id": user.yandex_id,
-        "name": user.name,
-        "email": user.email
+        "id": str(db_user.id),
+        "yandex_id": db_user.yandex_id,
+        "name": db_user.name,
+        "email": db_user.email
     }
