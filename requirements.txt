@@ -3,6 +3,7 @@ fastapi
 alembic
 SQLAlchemy
 asyncpg
+psycopg2
 psycopg[binary]
 sqlalchemy[asyncio]
 dotenv
