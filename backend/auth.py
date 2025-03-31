@@ -16,4 +16,5 @@ async def auth_yandex(request: Request):
 async def auth_yandex_callback(request: Request):
     # user_info = await yandex_oauth_callback(code)
     # print(f"user_info: {user_info}")
+    print(await request.json())
     return {"access_token": '', "token_type": "bearer"}
