@@ -85,16 +85,17 @@ async def auth_yandex_callback(request: Request, code: str):
 
 
 async def get_user(token: str = Depends(oauth2_scheme)):
-    """
-    Зависимость для получения текущего пользователя по внутреннему JWT-токену.
-    """
     jwt_secret = os.getenv("JWT_SECRET")
     jwt_algorithm = os.getenv("JWT_ALGORITHM", "HS256")
     try:
         payload = jwt.decode(token, jwt_secret, algorithms=[jwt_algorithm])
         user_id = uuid.UUID(payload.get("sub"))
+        exp = payload.get("exp")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
+        if datetime.datetime.fromtimestamp(exp, tz=datetime.timezone.utc) < datetime.datetime.now(
+                datetime.timezone.utc):
+            raise HTTPException(status_code=401, detail="Token expired")
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -107,6 +108,12 @@ async def get_user(token: str = Depends(oauth2_scheme)):
             ).unique().scalar_one_or_none()
             if user is None:
                 raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+async def get_admin(user: User = Depends(get_user)):
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     return user
 
 
