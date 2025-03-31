@@ -33,7 +33,6 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth_router)
 app.include_router(api_router)
-app.include_router(file_router)
 
 if __name__ == '__main__':
     import uvicorn
