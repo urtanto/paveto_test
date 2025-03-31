@@ -6,6 +6,7 @@ import aiohttp
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from starlette.responses import RedirectResponse
 
@@ -16,16 +17,32 @@ auth_router = APIRouter(prefix="/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/yandex")
 
 
+class TokenResponse(BaseModel):
+    access_token: str = Field(..., description="JWT токен для доступа")
+    token_type: str = Field("bearer", description="Тип токена (обычно 'bearer')")
+
+
 @auth_router.get("/yandex")
 async def auth_yandex(request: Request):
+    """
+    Перенаправляет пользователя для авторизации через Яндекс OAuth.
+    """
     return RedirectResponse(url=(
         f"https://oauth.yandex.ru/authorize?response_type=code"
         f"&client_id={request.app.state.yandex_client_id}&redirect_uri={request.app.state.yandex_redirect_uri}"
     ))
 
 
-@auth_router.get("/yandex/callback")
+@auth_router.get("/yandex/callback", response_model=TokenResponse)
 async def auth_yandex_callback(request: Request, code: str):
+    """
+    Обрабатывает callback от Яндекс OAuth.
+
+    После получения кода авторизации происходит обмен этого кода на access_token через API Яндекса.
+    Затем с помощью полученного токена запрашивается информация о пользователе.
+    Если пользователь с таким Yandex ID отсутствует в базе, он создается.
+    В конце генерируется и возвращается внутренний JWT токен для дальнейшей аутентификации.
+    """
     token_url = "https://oauth.yandex.com/token"
 
     headers = {
@@ -80,10 +97,16 @@ async def auth_yandex_callback(request: Request, code: str):
                datetime.timedelta(seconds=request.app.state.jwt_exp_delta_seconds),
     }
     internal_token = jwt.encode(payload, request.app.state.jwt_secret, algorithm=request.app.state.jwt_algorithm)
-    return {"access_token": internal_token, "token_type": "bearer"}
+    return TokenResponse(access_token=internal_token, token_type="bearer")
 
 
 async def get_user(token: str = Depends(oauth2_scheme)):
+    """
+    Зависимость для получения текущего пользователя на основе JWT токена.
+
+    Декодирует токен, проверяет его валидность и срок действия, а затем извлекает пользователя из базы данных.
+    Если токен недействителен, просрочен или пользователь не найден, выбрасывается HTTPException.
+    """
     jwt_secret = os.getenv("JWT_SECRET")
     jwt_algorithm = os.getenv("JWT_ALGORITHM", "HS256")
     try:
@@ -116,12 +139,15 @@ async def get_admin(user: User = Depends(get_user)):
     return user
 
 
-@auth_router.post("/refresh")
+@auth_router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(request: Request, user: User = Depends(get_user)):
+    """
+    Обновляет JWT токен для авторизованного пользователя.
+    """
     payload = {
         "sub": str(user.id),
         "exp": datetime.datetime.now(datetime.timezone.utc) +
                datetime.timedelta(seconds=request.app.state.jwt_exp_delta_seconds),
     }
     new_token = jwt.encode(payload, request.app.state.jwt_secret, algorithm=request.app.state.jwt_algorithm)
-    return {"access_token": new_token, "token_type": "bearer"}
+    return TokenResponse(access_token=new_token, token_type="bearer")
