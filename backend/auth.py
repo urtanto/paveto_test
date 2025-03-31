@@ -1,3 +1,5 @@
+import json
+
 import aiohttp
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -8,7 +10,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/yandex")
 
 @auth_router.get("/yandex")
 async def auth_yandex(request: Request):
-    print(request.app.state.yandex_client_id)
     return RedirectResponse(url=(
         f"https://oauth.yandex.ru/authorize?response_type=code"
         f"&client_id={request.app.state.yandex_client_id}&redirect_uri={request.app.state.yandex_redirect_uri}"
@@ -32,6 +33,7 @@ async def auth_yandex_callback(request: Request, code: str):
         async with session.post(token_url, headers=headers, data=data) as response:
             if response.status == 200:
                 token_data = await response.json()
+                print(json.dumps(token_data, indent=2))
                 access_token = token_data.get("access_token")
                 refresh_token = token_data.get("refresh_token")
                 expires_in = token_data.get("expires_in")
