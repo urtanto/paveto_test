@@ -31,6 +31,8 @@ async def auth_yandex_callback(request: Request, code: str):
 
     async with aiohttp.ClientSession() as session:
         async with session.post(token_url, headers=headers, data=data) as response:
+            print(await response.text())
+            print(response.status)
             if response.status == 200:
                 token_data = await response.json()
                 print(json.dumps(token_data, indent=2))
