@@ -1,8 +1,10 @@
 import datetime
+import os
+import uuid
 
 import aiohttp
 import jwt
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from starlette.responses import RedirectResponse
@@ -80,3 +82,40 @@ async def auth_yandex_callback(request: Request, code: str):
     }
     internal_token = jwt.encode(payload, request.app.state.jwt_secret, algorithm=request.app.state.jwt_algorithm)
     return {"access_token": internal_token, "token_type": "bearer"}
+
+
+async def get_user(token: str = Depends(oauth2_scheme)):
+    """
+    Зависимость для получения текущего пользователя по внутреннему JWT-токену.
+    """
+    jwt_secret = os.getenv("JWT_SECRET")
+    jwt_algorithm = os.getenv("JWT_ALGORITHM", "HS256")
+    try:
+        payload = jwt.decode(token, jwt_secret, algorithms=[jwt_algorithm])
+        user_id = uuid.UUID(payload.get("sub"))
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    async with await Database().get_session() as session:
+        async with session.begin():
+            user: User = (
+                await session.execute(
+                    select(User).where(User.id == user_id)
+                )
+            ).unique().scalar_one_or_none()
+            if user is None:
+                raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@auth_router.post("/refresh")
+async def refresh_token(request: Request, user: User = Depends(get_user)):
+    payload = {
+        "sub": str(user.id),
+        "exp": datetime.datetime.now(datetime.timezone.utc) +
+               datetime.timedelta(seconds=request.app.state.jwt_exp_delta_seconds),
+    }
+    new_token = jwt.encode(payload, request.app.state.jwt_secret, algorithm=request.app.state.jwt_algorithm)
+    return {"access_token": new_token, "token_type": "bearer"}
