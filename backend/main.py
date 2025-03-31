@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(api_router, prefix="/api", tags=["api"])
+app.include_router(api_router)
 
 if __name__ == '__main__':
     import uvicorn
