@@ -7,7 +7,7 @@ from fastapi.datastructures import State
 
 from backend.api import api_router
 from backend.auth import auth_router
-from backend.file import file_router
+from backend.files import file_router
 from database import Database
 
 load_dotenv()

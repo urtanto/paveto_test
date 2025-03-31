@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from backend.user import user_router
-from backend.file import file_router
+from backend.files import file_router
 
 api_router = APIRouter(prefix="/api", tags=["api"])
 
