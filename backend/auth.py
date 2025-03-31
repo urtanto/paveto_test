@@ -28,14 +28,15 @@ async def auth_yandex_callback(request: Request, code: str):
     }
 
     headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-type": "application/x-www-form-urlencoded",
         # "Authorization": f"Basic {ba}",
     }
 
     async with aiohttp.ClientSession() as session:
         async with session.post(token_url, headers=headers, json=data) as response:
-            print(await response.text())
             print(response.status)
+            print(await response.text())
+            print(await response.json())
             if response.status == 200:
                 token_data = await response.json()
                 print(json.dumps(token_data, indent=2))
