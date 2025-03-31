@@ -19,7 +19,13 @@ async def auth_yandex(request: Request):
 @auth_router.get("/yandex/callback")
 async def auth_yandex_callback(request: Request, code: str):
     token_url = "https://oauth.yandex.com/token"
-    params = {
+
+    headers = {
+        "Content-type": "application/x-www-form-urlencoded",
+        "Accept": "application/json"
+    }
+
+    data = {
         "grant_type": "authorization_code",
         "code": code,
         "client_id": request.app.state.yandex_client_id,
@@ -27,10 +33,8 @@ async def auth_yandex_callback(request: Request, code: str):
         "redirect_uri": request.app.state.yandex_redirect_uri,
     }
 
-    headers = {"Content-type": "application/x-www-form-urlencoded"}
-
     async with aiohttp.ClientSession() as session:
-        async with session.post(token_url, headers=headers, params=params) as response:
+        async with session.post(token_url, headers=headers, data=data) as response:
             print(response.status)
             print(await response.text())
             print(await response.json())
