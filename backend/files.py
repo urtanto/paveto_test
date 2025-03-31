@@ -27,8 +27,6 @@ async def upload_file(user: User = Depends(get_user), file: UploadFile = File(..
         content = await file.read()
         f.write(content)
 
-    print(file.filename)
-
     async with await Database().get_session() as session:
         async with session.begin():
             audio_file = AudioFile(id=file_id, filename=file.filename, user_id=user.id)
