@@ -7,5 +7,6 @@ psycopg2-binary
 psycopg[binary]
 sqlalchemy[asyncio]
 dotenv
+python-multipart
 aiohttp
 PyJWT
