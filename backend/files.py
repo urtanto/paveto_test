@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from backend.auth import get_user, get_admin
+from backend.auth import get_admin, get_user
 from database import Database
 from database.models import AudioFile, User
 
@@ -54,16 +54,21 @@ async def get_all_audio_files(_: User = Depends(get_user)):
                     )
                 ).scalars().all()
             )
-            return [
-                {
-                    "id": str(file.id),
-                    "filename": file.filename,
-                    "user_id": str(file.user_id)
-                } for file in audio_files
-            ]
+            return {
+                "files": [
+                    {
+                        "id": str(file.id),
+                        "filename": file.filename,
+                        "filepath": os.path.join("uploads", str(file.user_id), str(file.id)),
+                        "user_id": str(file.user_id)
+                    } for file in audio_files
+                ]
+            }
+
 
 class AudioFileUpdate(BaseModel):
     filename: str
+
 
 @file_router.patch("/{file_id}")
 async def update_audio_file(
@@ -90,6 +95,7 @@ async def update_audio_file(
         "user_id": str(audio_file.user_id)
     }
 
+
 @file_router.get("/{file_id}")
 async def get_audio_file(file_id: uuid.UUID, _: User = Depends(get_user)):
     async with await Database().get_session() as session:
@@ -106,8 +112,10 @@ async def get_audio_file(file_id: uuid.UUID, _: User = Depends(get_user)):
             return {
                 "id": str(audio_file.id),
                 "filename": audio_file.filename,
+                "filepath": os.path.join("uploads", str(audio_file.user_id), str(audio_file.id)),
                 "user_id": str(audio_file.user_id)
             }
+
 
 @file_router.delete("/{file_id}")
 async def delete_audio_file(file_id: uuid.UUID, _: User = Depends(get_admin)):
