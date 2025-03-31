@@ -12,7 +12,7 @@ from database.models import AudioFile, User
 file_router = APIRouter(prefix="/file", tags=["file"])
 
 
-@file_router.post("/")
+@file_router.post("/upload")
 async def upload_file(user: User = Depends(get_user), file: UploadFile = File(...)):
     if not file.content_type.startswith("audio/"):
         raise HTTPException(status_code=400, detail="Incorrect file type. Only audio files are allowed")
