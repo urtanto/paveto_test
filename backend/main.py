@@ -18,6 +18,7 @@ async def lifespan(app: FastAPI):
     app.state.yandex_client_id = os.getenv("YANDEX_CLIENT_ID")
     app.state.yandex_client_secret = os.getenv("YANDEX_CLIENT_SECRET")
     app.state.yandex_redirect_uri = os.getenv("YANDEX_REDIRECT_URI")
+    app.state.jwt_secret = os.getenv("JWT_SECRET")
     yield
 
 
