@@ -5,3 +5,4 @@ SQLAlchemy
 asyncpg
 psycopg[binary]
 sqlalchemy[asyncio]
+dotenv

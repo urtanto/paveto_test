@@ -1,10 +1,13 @@
 import os
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.datastructures import State
 
 from backend.auth import auth_router
+
+load_dotenv()
 
 
 @asynccontextmanager
