@@ -13,8 +13,9 @@ async def auth_yandex(request: Request):
 
 
 @auth_router.get("/yandex/callback")
-async def auth_yandex_callback(request: Request):
+async def auth_yandex_callback(request: Request, code: str):
     # user_info = await yandex_oauth_callback(code)
     # print(f"user_info: {user_info}")
+    print(code)
     print(await request.json())
     return {"access_token": '', "token_type": "bearer"}
