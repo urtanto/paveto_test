@@ -36,6 +36,7 @@
 подключение к бд. Также по этой же причине у меня .env находится в репозитории.
 
 Вот скрин:
+
 ![img.png](img.png)
 
 Для логина зайдите в браузере по ссылке: https://pavetotest-production.up.railway.app/auth/yandex
