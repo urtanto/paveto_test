@@ -1,1 +1,2 @@
-from connectors.database.models.tg_users import *
+from database.models.user import *
+from database.models.audio import *
