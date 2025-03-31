@@ -27,7 +27,7 @@ async def auth_yandex_callback(request: Request, code: str):
         "redirect_uri": request.app.state.yandex_redirect_uri,
     }
 
-    headers = {"Content-Type": "application/json"}
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
     async with aiohttp.ClientSession() as session:
         async with session.post(token_url, headers=headers, json=data) as response:
