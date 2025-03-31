@@ -56,7 +56,7 @@ async def auth_yandex_callback(request: Request, code: str):
             else:
                 raise HTTPException(status_code=401, detail="Yandex user info retrieval failed")
 
-    async with Database().get_session() as session:
+    async with await Database().get_session() as session:
         async with session.begin():
             user: User = (
                 await session.execute(

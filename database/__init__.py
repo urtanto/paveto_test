@@ -32,7 +32,7 @@ class Database:
         self._engine = None
         self._session_factory = None
 
-    async def init(self):
+    async def init(self) -> "Database":
         """
         Инициализация асинхронного движка и фабрики сессий
 
