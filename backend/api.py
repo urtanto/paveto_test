@@ -65,6 +65,22 @@ async def patch_me(_: User = Depends(get_user)):
         ]
     }
 
+@api_router.get("/user/{user_id}")
+async def get_user_req(user_id: str, _: User = Depends(get_user)):
+    async with await Database().get_session() as session:
+        user: User = (
+            await session.execute(
+                select(User).where(User.id == uuid.UUID(user_id))
+            )
+        ).unique().scalar_one_or_none()
+        return {
+            "id": str(user.id),
+            "yandex_id": user.yandex_id,
+            "name": user.name,
+            "email": user.email
+        }
+
+
 @api_router.delete("/user/{user_id}")
 async def delete_user(user_id: str, _: User = Depends(get_admin)):
     async with await Database().get_session() as session:
