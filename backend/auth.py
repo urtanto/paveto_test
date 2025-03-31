@@ -1,4 +1,4 @@
-from aiogram.client.session import aiohttp
+import aiohttp
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from starlette.responses import RedirectResponse
