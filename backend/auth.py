@@ -76,7 +76,7 @@ async def auth_yandex_callback(request: Request, code: str):
     payload = {
         "sub": user.id,
         "exp": datetime.datetime.now(datetime.timezone.utc) +
-               datetime.timedelta(seconds=request.app.state.yandex_exp_delta_seconds),
+               datetime.timedelta(seconds=request.app.state.jwt_exp_delta_seconds),
     }
     internal_token = jwt.encode(payload, request.app.state.jwt_secret, algorithm=request.app.state.jwt_algorithm)
     return {"access_token": internal_token, "token_type": "bearer"}
