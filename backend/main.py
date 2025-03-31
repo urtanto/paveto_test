@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     app.state.yandex_redirect_uri = os.getenv("YANDEX_REDIRECT_URI")
     app.state.jwt_secret = os.getenv("JWT_SECRET")
     app.state.jwt_algorithm = os.getenv("JWT_ALGORITHM", "HS256")
-    app.state.jwt_exp_delta_seconds = os.getenv("JWT_EXP_DELTA_SECONDS")
+    app.state.jwt_exp_delta_seconds = int(os.getenv("JWT_EXP_DELTA_SECONDS"))
 
     await Database().init()
     yield
